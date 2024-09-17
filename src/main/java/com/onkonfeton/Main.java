@@ -1,9 +1,5 @@
 package com.onkonfeton;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.onkonfeton.domain.SimpleJsonParser;
-
 import java.io.IOException;
 
 public class Main {
@@ -46,22 +42,14 @@ public class Main {
 }*/
 
         String json = """
-            {
-                "name":"John",
-                "age":30,
-                "isStudent":false,
-                "courses":[
-                    "Math",
-                    "Science"
-                ]
-            }
+            {   "name":"John", "age":30, "isStudent":false, "courses":[ "Math", "Science"]}
     
         """;
 
-//        JsonParser jsonParser = new JsonParser();
-//        jsonParser.fromJson(json, Person.class);
+        JsonParser jsonParser = new JsonParser();
+        jsonParser.parse(json, Person.class);
 
-        System.out.println(SimpleJsonParser.parseJson(json));
+        System.out.println();
 
     }
 }

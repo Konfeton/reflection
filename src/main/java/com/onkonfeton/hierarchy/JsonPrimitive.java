@@ -1,8 +1,11 @@
 package com.onkonfeton.hierarchy;
 
 
-import java.util.Objects;
+import lombok.Getter;
+import lombok.ToString;
 
+@Getter
+@ToString
 public class JsonPrimitive extends JsonElement{
     private final Object value;
 
@@ -21,5 +24,17 @@ public class JsonPrimitive extends JsonElement{
     public JsonPrimitive(Character c) {
         this.value = c;
     }
+
+
+    public String getAsString(){
+        if (value instanceof String){
+            return (String) value;
+        }
+        else{
+            throw new RuntimeException();
+        }
+    }
+
+
 
 }

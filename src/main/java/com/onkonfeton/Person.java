@@ -16,5 +16,4 @@ public class Person {
     private int age;
     private boolean isStudent;
     private List<String> courses;
-
 }

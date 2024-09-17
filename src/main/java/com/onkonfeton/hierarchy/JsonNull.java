@@ -1,4 +1,7 @@
 package com.onkonfeton.hierarchy;
 
-public class JsonNull {
+import lombok.ToString;
+
+@ToString
+public class JsonNull extends JsonElement{
 }
