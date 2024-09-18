@@ -8,6 +8,7 @@ import com.onkonfeton.hierarchy.JsonPrimitive;
 import lombok.SneakyThrows;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,16 +16,27 @@ import java.util.Map;
 
 public class JsonParser {
 
-
     public <T> T parse(String json, Class<T> classOf) throws IOException {
         JSONParser jsonParser = new JSONParser();
-        Map<String, JsonElement> parse = jsonParser.parse(json);
-        System.out.println(parse);
-
-        return null;
+        Map<String, JsonElement> map = jsonParser.parse(json);
+        System.out.println(map);
+        T cast = assignValues(map, classOf);
+        return cast;
     }
 
+    @SneakyThrows
+    private <T> T assignValues(Map<String, JsonElement> map, Class<T> classOf) {
+        T instance = classOf.getConstructor().newInstance();
+        Field[] fields = classOf.getFields();
+        for (Field field : fields) {
+            JsonElement jsonElement = map.get(field.getName());
+            if (jsonElement != null){
+//                field.
+            }
 
+        }
+        return instance;
+    }
 
     class JSONParser {
 
@@ -35,6 +47,8 @@ public class JsonParser {
         private static final char QUOTE = '"';
         private static final char COMMA = ',';
         private static final char COLON = ':';
+        private static final char ESCAPE_SEQUENCE = '\n';
+        private static final char SPACE = ' ';
 
         private String json;
         private int index = 0;
@@ -50,7 +64,7 @@ public class JsonParser {
 
 
         public JsonElement parseValue() throws IOException {
-            skipWhitespaces();
+            skipUnnecessarySymbols();
             char currentChar = peek();
             if (currentChar == OBJECT_START) {
                 return parseObject();
@@ -69,22 +83,23 @@ public class JsonParser {
             } else if (json.startsWith("null", index)) {
                 index += 4;
                 return new JsonNull();
-            } else {
+            } else{
                 throw new IOException("Unexpected character: " + currentChar);
             }
+
         }
 
         private JsonArray parseArray() throws IOException {
             List<JsonElement> array = new ArrayList<>();
-            index++; // Skip '['
-            skipWhitespaces();
+            index++;// Skip '['
+            skipUnnecessarySymbols();
             while (peek() != ARRAY_END) {
                 JsonElement value = parseValue();
                 array.add(value);
-                skipWhitespaces();
+                skipUnnecessarySymbols();
                 if (peek() == COMMA) {
                     index++; // Skip ','
-                    skipWhitespaces();
+                    skipUnnecessarySymbols();
                 } else if (peek() != ARRAY_END) {
                     throw new IOException("Expected comma or closing bracket");
                 }
@@ -110,21 +125,21 @@ public class JsonParser {
         private JsonObject parseObject() throws IOException {
             Map<String, JsonElement> map = new LinkedHashMap<>();
             index++; // Skip '{'
-            skipWhitespaces();
+            skipUnnecessarySymbols();
             while (peek() != OBJECT_END) {
                 JsonPrimitive key = parseString();
-                skipWhitespaces();
+                skipUnnecessarySymbols();
                 if (peek() != COLON) {
                     throw new RuntimeException("Expected colon after key");
                 }
                 index++; // Skip ':'
-                skipWhitespaces();
+                skipUnnecessarySymbols();
                 JsonElement value = parseValue();
                 map.put(key.getAsString(), value);
-                skipWhitespaces();
+                skipUnnecessarySymbols();
                 if (peek() == COMMA) {
                     index++; // Skip ','
-                    skipWhitespaces();
+                    skipUnnecessarySymbols();
                 } else if (peek() != OBJECT_END) {
                     throw new RuntimeException("Expected comma or closing brace");
                 }
@@ -145,8 +160,8 @@ public class JsonParser {
 
         }
 
-        private void skipWhitespaces() {
-            while (json.charAt(index) == ' ') {
+        private void skipUnnecessarySymbols() {
+            while (json.charAt(index) == SPACE || json.charAt(index) == ESCAPE_SEQUENCE) {
                 index++;
             }
         }
